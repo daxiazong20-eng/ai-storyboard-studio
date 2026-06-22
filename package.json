@@ -1,0 +1,88 @@
+{
+  "name": "ai-storyboard-studio",
+  "version": "1.0.9",
+  "private": true,
+  "description": "Local-first AI image, video, and storyboard workspace powered by Hermes",
+  "main": "out/main/index.js",
+  "author": "AI Storyboard Studio contributors",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "tsc --noEmit",
+    "test:bridge": "node scripts/run-bridge-test.mjs",
+    "check": "npm run typecheck && npm run build && npm run test:bridge",
+    "package:win": "npm run build && electron-builder --win portable --arm64",
+    "package:win:x64": "npm run build && electron-builder --win portable --x64",
+    "package:win:installer": "npm run build && electron-builder --win nsis --arm64",
+    "package:win:installer:x64": "npm run build && electron-builder --win nsis --x64"
+  },
+  "dependencies": {
+    "@xyflow/react": "^12.10.0",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.17",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "electron": "^42.4.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^3.0.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  },
+  "build": {
+    "appId": "app.aistoryboardstudio.desktop",
+    "productName": "AI Storyboard Studio",
+    "compression": "normal",
+    "electronLanguages": ["zh-CN", "en-US"],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/hermes_bridge.py",
+        "to": "hermes_bridge.py"
+      },
+      {
+        "from": "resources/mock-video.mp4",
+        "to": "mock-video.mp4"
+      }
+    ],
+    "asar": true,
+    "win": {
+      "icon": "resources/app-icon.ico",
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["arm64"]
+        }
+      ],
+      "artifactName": "AI-Storyboard-Studio-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    }
+  }
+}

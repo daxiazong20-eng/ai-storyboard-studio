@@ -1,0 +1,17 @@
+import { useState } from 'react';
+import { Clock3, FolderPlus, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AppLayout } from '../components/AppLayout';
+import { TaskQueuePanel } from '../components/TaskQueuePanel';
+import { useStudioStore } from '../stores/studioStore';
+
+export function HomePage(){
+  const {projects,createProject,error,setError}=useStudioStore(); const [open,setOpen]=useState(false); const [name,setName]=useState('新项目'); const [type,setType]=useState<'normal'|'story'>('normal'); const nav=useNavigate();
+  const create=async()=>{const p=await createProject(name,type);setOpen(false);nav(type==='story'?`/story/${p.id}`:`/project/${p.id}`)};
+  const remove=async(id:string,name:string)=>{if(!window.confirm(`确定删除项目“${name}”及其本地文件吗？此操作不可撤销。`))return;try{await window.api.projects.delete(id,true);await useStudioStore.getState().refreshProjects()}catch(e){setError(String(e))}};
+  return <AppLayout actions={<button className="btn btn-primary" onClick={()=>setOpen(true)}><Plus size={16}/>新建项目</button>}><main className="home-body"><div style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:22}}><section><div style={{display:'flex',alignItems:'baseline',marginBottom:14}}><h2 style={{margin:0,fontSize:20}}>项目</h2><span className="muted" style={{marginLeft:10,fontSize:12}}>{projects.length} 个本地工程</span></div>
+    <div className="project-grid">{projects.map(p=><article className="card project-card" key={p.id} onClick={()=>nav(p.type==='story'?`/story/${p.id}`:`/project/${p.id}`)}><button className="btn btn-icon btn-danger" title="删除项目" style={{position:'absolute',right:8,top:8,zIndex:2}} onClick={e=>{e.stopPropagation();void remove(p.id,p.name)}}><Trash2 size={14}/></button><div className="project-cover">{p.coverPath?<img src={window.api.mediaUrl(p.coverPath)}/>:p.type==='story'?<Sparkles size={45} color="#3bd8b2"/>:<FolderPlus size={45} color="#3b82f6"/>}</div><div className="project-info"><div style={{display:'flex'}}><strong style={{flex:1}}>{p.name}</strong><span className="tag">{p.type==='story'?'短剧项目':'普通项目'}</span></div><div className="muted" style={{display:'flex',gap:5,alignItems:'center',fontSize:11,marginTop:9}}><Clock3 size={12}/>更新于 {new Date(p.updatedAt).toLocaleString('zh-CN')}</div></div></article>)}
+    {!projects.length&&<div className="card" style={{padding:40,textAlign:'center'}}><FolderPlus size={42} color="#477bbf"/><h3>创建第一个项目</h3><p className="muted">普通创作或短剧工作流都从本地项目开始。</p></div>}</div></section><aside className="panel" style={{borderRadius:7,overflow:'hidden'}}><TaskQueuePanel limit={10}/></aside></div></main>
+    {open&&<div className="modal-backdrop"><div className="modal"><h2 style={{marginTop:0}}>新建项目</h2><label className="label">项目名称</label><input className="field" value={name} onChange={e=>setName(e.target.value)}/><label className="label" style={{marginTop:14}}>项目类型</label><div className="segmented"><button className={type==='normal'?'active':''} onClick={()=>setType('normal')}>普通创作</button><button className={type==='story'?'active':''} onClick={()=>setType('story')}>短剧项目</button></div><div style={{display:'flex',justifyContent:'flex-end',gap:8,marginTop:18}}><button className="btn" onClick={()=>setOpen(false)}>取消</button><button className="btn btn-primary" onClick={()=>void create()}>创建</button></div></div></div>}
+    {error&&<div className="error-banner" onClick={()=>setError()}>{error}</div>}</AppLayout>;
+}
